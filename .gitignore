@@ -1,0 +1,49 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Jupyter Notebooks
+*.ipynb
+.ipynb_checkpoints/
+
+# Virtual environments
+fhe-env/
+venv/
+env/
+ENV/
+
+# Logs
+*.log
+logs/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project specific
+*.pkl.bak
+*.bak
+*copy/
+
+# Large data files (can be downloaded from UCI)
+# Uncomment if you don't want to commit the dataset:
+# data/*.csv
+
+# Assignment/Report files (project-specific)
+FINAL_REPORT_SECTIONS_*.md
+Assignment-*.ipynb
+
+# Model files (optional - uncomment if models should be generated locally)
+# backend/models/*.pkl
+# backend/models/*.json
+

@@ -1,0 +1,498 @@
+openapi: 3.0.3
+info:
+  title: FHE Credit Default Risk Prediction API
+  description: |
+    Privacy-preserving credit card default risk prediction using Fully Homomorphic Encryption (FHE).
+    
+    This API allows clients to predict credit default risk while keeping financial data encrypted.
+    The server performs machine learning inference on encrypted data without ever seeing the raw values.
+    
+    ## Features
+    - **Privacy-Preserving**: All computations performed on encrypted data
+    - **Multiple Models**: Logistic Regression (FHE-enabled), Random Forest, Gradient Boosting
+    - **Benchmarking**: Compare FHE vs non-FHE performance
+    - **High Accuracy**: 81.3% accuracy on UCI Credit Card Default dataset
+    
+    ## Technology Stack
+    - **FHE Library**: TenSEAL (Microsoft SEAL)
+    - **Encryption Scheme**: CKKS
+    - **ML Framework**: scikit-learn
+    - **Backend**: FastAPI
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@example.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:8000
+    description: Local development server
+  - url: http://localhost:8000/api/v1
+    description: Local development server with versioning
+
+tags:
+  - name: Health
+    description: Health check and service status endpoints
+  - name: Encryption
+    description: FHE encryption context management
+  - name: Prediction
+    description: Credit default risk prediction endpoints
+  - name: Models
+    description: Model information and management
+  - name: Comparison
+    description: Multi-model comparison endpoints
+
+paths:
+  /:
+    get:
+      tags:
+        - Health
+      summary: Health Check
+      description: Returns the health status and basic information about the API service
+      operationId: healthCheck
+      responses:
+        '200':
+          description: Service is healthy and operational
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: healthy
+                  service:
+                    type: string
+                    example: FHE Credit Default Risk Prediction API
+                  version:
+                    type: string
+                    example: 1.0.0
+
+  /context:
+    get:
+      tags:
+        - Encryption
+      summary: Get FHE Encryption Context
+      description: |
+        Retrieves the public encryption context for client-side encryption.
+        Clients must call this endpoint once to obtain encryption parameters before making predictions.
+      operationId: getEncryptionContext
+      responses:
+        '200':
+          description: Public encryption context successfully retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  context:
+                    type: string
+                    description: Base64-encoded serialized TenSEAL public context
+                    example: QUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQQ==
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /predict:
+    post:
+      tags:
+        - Prediction
+      summary: FHE Prediction (Encrypted)
+      description: |
+        Performs credit default risk prediction using FHE (Fully Homomorphic Encryption).
+        The model processes encrypted data and returns encrypted results, ensuring complete privacy.
+        
+        **Processing Time**: 2-3 seconds (due to FHE computation overhead)
+        
+        **Model Used**: Logistic Regression (FHE-compatible)
+      operationId: predictWithFHE
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PredictionRequest'
+            examples:
+              lowRisk:
+                summary: Low Risk Customer
+                value:
+                  features: [50000, 2, 2, 1, 35, 0, 0, 0, 0, 0, 0, 5000, 4800, 5200, 4900, 5100, 5000, 5000, 4800, 5200, 4900, 5100, 5000]
+              highRisk:
+                summary: High Risk Customer
+                value:
+                  features: [10000, 1, 3, 2, 22, 2, 2, 1, 1, 0, 0, 8000, 8500, 9000, 9200, 9500, 9800, 500, 400, 300, 200, 100, 0]
+      responses:
+        '200':
+          description: Prediction successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PredictionResponse'
+              examples:
+                noDefault:
+                  summary: No Default Prediction
+                  value:
+                    prediction: 0
+                    probability: 0.15
+                    confidence: High
+                    processing_time: 2.47
+                    model_info:
+                      model_type: Logistic Regression
+                      fhe_enabled: true
+                willDefault:
+                  summary: Default Prediction
+                  value:
+                    prediction: 1
+                    probability: 0.78
+                    confidence: High
+                    processing_time: 2.53
+                    model_info:
+                      model_type: Logistic Regression
+                      fhe_enabled: true
+        '400':
+          description: Invalid input (wrong number of features)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                detail: Expected 23 features, got 20
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /predict/clear:
+    post:
+      tags:
+        - Prediction
+      summary: Clear Prediction (Unencrypted)
+      description: |
+        Performs prediction on unencrypted data for comparison and benchmarking.
+        
+        **Processing Time**: 10-50 ms
+        
+        **Use Case**: Performance comparison with FHE prediction
+      operationId: predictClear
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PredictionRequest'
+      responses:
+        '200':
+          description: Prediction successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PredictionResponse'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /predict/model/{model_name}:
+    post:
+      tags:
+        - Prediction
+      summary: Predict with Specific Model
+      description: Performs prediction using a specific model by name
+      operationId: predictWithModel
+      parameters:
+        - name: model_name
+          in: path
+          required: true
+          description: Name of the model to use
+          schema:
+            type: string
+            enum:
+              - Logistic Regression
+              - Random Forest
+              - Gradient Boosting
+          example: Logistic Regression
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PredictionRequest'
+      responses:
+        '200':
+          description: Prediction successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PredictionResponse'
+        '404':
+          description: Model not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /models/list:
+    get:
+      tags:
+        - Models
+      summary: List Available Models
+      description: |
+        Returns metadata for all available trained models including performance metrics,
+        parameters, and FHE compatibility status.
+      operationId: listModels
+      responses:
+        '200':
+          description: Models metadata retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelsMetadata'
+        '404':
+          description: Metadata file not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /compare-models:
+    post:
+      tags:
+        - Comparison
+      summary: Compare All Models
+      description: |
+        Runs prediction using all three models simultaneously:
+        - Logistic Regression (FHE-enabled)
+        - Random Forest (non-FHE)
+        - Gradient Boosting (non-FHE)
+        
+        Returns predictions and performance metrics for each model.
+      operationId: compareModels
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PredictionRequest'
+      responses:
+        '200':
+          description: Comparison successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ModelComparison'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    PredictionRequest:
+      type: object
+      required:
+        - features
+      properties:
+        features:
+          type: array
+          items:
+            type: number
+            format: float
+          minItems: 23
+          maxItems: 23
+          description: |
+            Array of 23 financial features in the following order:
+            1. LIMIT_BAL: Credit limit amount
+            2. SEX: Gender (1=male, 2=female)
+            3. EDUCATION: Education level (1=graduate, 2=university, 3=high school, 4=other)
+            4. MARRIAGE: Marital status (1=married, 2=single, 3=other)
+            5. AGE: Age in years
+            6-11. PAY_0 to PAY_5: Payment status for last 6 months
+            12-17. BILL_AMT1 to BILL_AMT6: Bill statement amounts
+            18-23. PAY_AMT1 to PAY_AMT6: Previous payment amounts
+          example: [20000, 2, 2, 1, 24, 0, 0, -1, -1, -2, -2, 3913, 3102, 689, 0, 0, 0, 0, 689, 0, 0, 0, 0]
+
+    PredictionResponse:
+      type: object
+      properties:
+        prediction:
+          type: integer
+          enum: [0, 1]
+          description: Binary prediction (0=No Default, 1=Default)
+          example: 0
+        probability:
+          type: number
+          format: float
+          minimum: 0.0
+          maximum: 1.0
+          description: Probability of default (0.0 to 1.0)
+          example: 0.15
+        confidence:
+          type: string
+          enum: [Low, Medium, High]
+          description: Confidence level based on probability distance from 0.5
+          example: High
+        processing_time:
+          type: number
+          format: float
+          description: Time taken for prediction in seconds
+          example: 2.47
+        model_info:
+          type: object
+          properties:
+            model_type:
+              type: string
+              example: Logistic Regression
+            fhe_enabled:
+              type: boolean
+              example: true
+
+    ModelMetadata:
+      type: object
+      properties:
+        filename:
+          type: string
+          example: logistic_regression.pkl
+        accuracy:
+          type: number
+          format: float
+          description: Model accuracy on test set
+          example: 0.8133
+        f1_score:
+          type: number
+          format: float
+          description: F1 score (harmonic mean of precision and recall)
+          example: 0.3717
+        roc_auc:
+          type: number
+          format: float
+          description: ROC AUC score (area under ROC curve)
+          example: 0.7160
+        fhe_compatible:
+          type: boolean
+          description: Whether the model supports FHE encryption
+          example: true
+        model_type:
+          type: string
+          example: LogisticRegression
+        parameters:
+          type: object
+          additionalProperties: true
+          description: Model hyperparameters
+          example:
+            max_iter: 1000
+            random_state: 42
+            solver: lbfgs
+
+    ModelsMetadata:
+      type: object
+      additionalProperties:
+        $ref: '#/components/schemas/ModelMetadata'
+      example:
+        Logistic Regression:
+          filename: logistic_regression.pkl
+          accuracy: 0.8133
+          f1_score: 0.3717
+          roc_auc: 0.7160
+          fhe_compatible: true
+          model_type: LogisticRegression
+          parameters:
+            max_iter: 1000
+            random_state: 42
+            solver: lbfgs
+        Random Forest:
+          filename: random_forest.pkl
+          accuracy: 0.8106
+          f1_score: 0.4572
+          roc_auc: 0.7590
+          fhe_compatible: false
+          model_type: RandomForestClassifier
+          parameters:
+            n_estimators: 100
+            random_state: 42
+            n_jobs: -1
+        Gradient Boosting:
+          filename: gradient_boosting.pkl
+          accuracy: 0.8180
+          f1_score: 0.4686
+          roc_auc: 0.7723
+          fhe_compatible: false
+          model_type: GradientBoostingClassifier
+          parameters:
+            n_estimators: 100
+            random_state: 42
+
+    ModelComparisonResult:
+      type: object
+      properties:
+        prediction:
+          type: integer
+          enum: [0, 1]
+          example: 0
+        probability:
+          type: number
+          format: float
+          example: 0.15
+        processing_time:
+          type: number
+          format: float
+          example: 2.47
+        accuracy:
+          type: number
+          format: float
+          example: 0.8133
+        f1_score:
+          type: number
+          format: float
+          example: 0.3717
+        roc_auc:
+          type: number
+          format: float
+          example: 0.7160
+
+    ModelComparison:
+      type: object
+      additionalProperties:
+        $ref: '#/components/schemas/ModelComparisonResult'
+      example:
+        Logistic Regression:
+          prediction: 0
+          probability: 0.15
+          processing_time: 2.47
+          accuracy: 0.8133
+          f1_score: 0.3717
+          roc_auc: 0.7160
+        Random Forest:
+          prediction: 0
+          probability: 0.12
+          processing_time: 0.02
+          accuracy: 0.8106
+          f1_score: 0.4572
+          roc_auc: 0.7590
+        Gradient Boosting:
+          prediction: 0
+          probability: 0.11
+          processing_time: 0.03
+          accuracy: 0.8180
+          f1_score: 0.4686
+          roc_auc: 0.7723
+
+    Error:
+      type: object
+      properties:
+        detail:
+          type: string
+          description: Error message describing what went wrong
+          example: Expected 23 features, got 20
+
+

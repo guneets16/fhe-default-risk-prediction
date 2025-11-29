@@ -1,0 +1,74 @@
+{
+    "training_date": "2025-11-29 15:05:15",
+    "n_features": 19,
+    "feature_names": [
+        "LIMIT_BAL",
+        "PAY_0",
+        "PAY_2",
+        "PAY_3",
+        "PAY_4",
+        "PAY_5",
+        "PAY_6",
+        "BILL_AMT1",
+        "BILL_AMT2",
+        "BILL_AMT3",
+        "BILL_AMT4",
+        "BILL_AMT5",
+        "BILL_AMT6",
+        "PAY_AMT1",
+        "PAY_AMT2",
+        "PAY_AMT3",
+        "PAY_AMT4",
+        "PAY_AMT5",
+        "PAY_AMT6"
+    ],
+    "train_size": 23972,
+    "test_size": 5993,
+    "models": {
+        "Logistic Regression": {
+            "filename": "logistic_regression.pkl",
+            "accuracy": 0.8086100450525613,
+            "f1_score": 0.3479249573621376,
+            "roc_auc": 0.7149957937716795,
+            "fhe_compatible": true,
+            "model_type": "CalibratedClassifierCV",
+            "parameters": {
+                "n_estimators": "N/A",
+                "max_iter": "N/A",
+                "random_state": "N/A",
+                "solver": "N/A",
+                "n_jobs": null
+            }
+        },
+        "Random Forest": {
+            "filename": "random_forest.pkl",
+            "accuracy": 0.8137827465376273,
+            "f1_score": 0.39740820734341253,
+            "roc_auc": 0.7550310724411733,
+            "fhe_compatible": false,
+            "model_type": "RandomForestClassifier",
+            "parameters": {
+                "n_estimators": 100,
+                "max_iter": "N/A",
+                "random_state": 42,
+                "solver": "N/A",
+                "n_jobs": -1
+            }
+        },
+        "Gradient Boosting": {
+            "filename": "gradient_boosting.pkl",
+            "accuracy": 0.8196228933756049,
+            "f1_score": 0.4470588235294118,
+            "roc_auc": 0.7553671828870658,
+            "fhe_compatible": false,
+            "model_type": "GradientBoostingClassifier",
+            "parameters": {
+                "n_estimators": 50,
+                "max_iter": "N/A",
+                "random_state": 42,
+                "solver": "N/A",
+                "n_jobs": "N/A"
+            }
+        }
+    }
+}
