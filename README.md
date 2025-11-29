@@ -211,36 +211,6 @@ lsof -ti:8000 | xargs kill -9
 lsof -ti:8501 | xargs kill -9
 ```
 
-**Issue: Module not found**
-```bash
-# Make sure virtual environment is activated
-source fhe-env/bin/activate
-
-# Reinstall dependencies
-pip install -r requirements.txt
-```
-
-**Issue: Model not found**
-```bash
-# Train the model first
-python train_credit_model.py
-```
-
-## 📚 Documentation
-
-- **[HOW_IT_WORKS.md](HOW_IT_WORKS.md)** - Detailed technical guide explaining:
-  - How models are trained
-  - How data is encrypted
-  - How inference works
-  - How libraries are used
-  - Complete workflow examples
-
-- **[api-documentation.yaml](api-documentation.yaml)** - OpenAPI 3.0 specification:
-  - Complete API endpoint documentation
-  - Request/response schemas
-  - Example requests and responses
-  - Interactive Swagger UI at http://localhost:8000/docs
-
 ## 🔗 External Resources
 
 - [TenSEAL Documentation](https://github.com/OpenMined/TenSEAL)
